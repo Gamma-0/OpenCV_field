@@ -31,6 +31,7 @@ void process(const char* ims)
 			img_hsv.at<Vec3b>(i,j)[2] = 255;
 	  }
 	}
+
 	
 	// Sauvegarde la nouvelle image imd
 	cvtColor(img_hsv, img_hsv, CV_HSV2BGR);
@@ -42,8 +43,13 @@ void process(const char* ims)
 	imshow(ims, img_hsv);
 
 	waitKey();
-	
-	erode(img_hsv, img_hsv, getStructuringElement(MORPH_ELLIPSE, Size(10, 10)) );
+
+
+
+	Scalar m= mean(img_hsv);
+	cerr<<"mean= "<<m<<endl;
+	if(m[0]<=250){
+	  erode(img_hsv, img_hsv, getStructuringElement(MORPH_ELLIPSE, Size(10, 10)) );
 	dilate( img_hsv, img_hsv, getStructuringElement(MORPH_ELLIPSE, Size(10, 10)) );
 	
 	imshow(ims,img_hsv );
@@ -58,24 +64,38 @@ void process(const char* ims)
 	imshow(ims,canny_output);
 	waitKey();
 
-	
+
+
 	/// Find contours
 	findContours( canny_output, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, Point(0, 0) );  
 	/// Draw contours
 	unsigned int max=0;
 	int max_index=0;
-	if(contours.size()>2)
+	
+
+	
+	/// match close edges
 	for(unsigned int i = 0; i< contours.size(); i++ ){
-	  
+	  drawContours(canny_output, contours, i    ,255 , 2, 8, hierarchy, 0, Point() );
+	}
+	
+	imshow(ims,canny_output);
+	waitKey();
+
+	findContours( canny_output, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, Point(0, 0) );  
+	for(unsigned int i = 0; i< contours.size(); i++ ){
 	  if(contours[i].size()>max){
 	    max =contours[i].size();
 	    max_index=i;
 	  }
 	}
-	drawContours( img_in, contours, max_index,255 , 2, 8, hierarchy, 0, Point() );
+       	drawContours( img_in, contours, max_index,255 , 2, 8, hierarchy, 0, Point() );
 	
 	imshow(ims,img_in);
 	waitKey();
+	}
+	else 
+	  cerr<< "tout est terrain"<<endl;
 	
 }
 
