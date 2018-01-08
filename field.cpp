@@ -48,7 +48,10 @@ void process(const char* ims)
 
 	Scalar m= mean(img_hsv);
 	cerr<<"mean= "<<m<<endl;
+
+
 	if(m[0]<=250){
+
 	  erode(img_hsv, img_hsv, getStructuringElement(MORPH_ELLIPSE, Size(10, 10)) );
 	dilate( img_hsv, img_hsv, getStructuringElement(MORPH_ELLIPSE, Size(10, 10)) );
 	
@@ -95,8 +98,11 @@ void process(const char* ims)
 	waitKey();
 	}
 	else 
-	  cerr<< "tout est terrain"<<endl;
-	
+	  { cerr<< "tout est terrain"<<endl;
+	    copyMakeBorder(img_in,img_in, 2, 2, 2, 2,BORDER_CONSTANT, 255);
+	imshow(ims,img_in);
+	waitKey();
+	  }
 }
 
 void usage (const char *s)
