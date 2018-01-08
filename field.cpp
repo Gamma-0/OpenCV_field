@@ -52,7 +52,7 @@ void process(const char* ims)
 
 	Mat canny_output;
 	int thresh = 100;
-	int max_thresh = 255;
+
 	/// Detect edges using canny
 	Canny(  img_hsv, canny_output, thresh, thresh*2, 3 );
 	imshow(ims,canny_output);
@@ -62,10 +62,10 @@ void process(const char* ims)
 	/// Find contours
 	findContours( canny_output, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, Point(0, 0) );  
 	/// Draw contours
-	int max=0;
+	unsigned int max=0;
 	int max_index=0;
 	if(contours.size()>2)
-	for( int i = 0; i< contours.size(); i++ ){
+	for(unsigned int i = 0; i< contours.size(); i++ ){
 	  
 	  if(contours[i].size()>max){
 	    max =contours[i].size();
