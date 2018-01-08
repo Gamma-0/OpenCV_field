@@ -6,6 +6,138 @@
 using namespace cv;
 using namespace std;
 
+
+
+int
+_find(int p, int* roots)
+{
+	while(roots[p] != p)
+		p = roots[p];
+	return p;
+}
+
+int
+_union(int r0, int r1, int* roots)
+{
+	if(r0 == r1) return r0;
+	if(r0 == -1) return r1;
+	if(r1 == -1) return r0;
+	if(r0 <	r1){
+		roots[r1] = r0;
+		return r0;
+	}else{
+		roots[r0]=r1;
+		return r1;
+	}
+}
+
+int
+_add(int p, int r, int* roots)
+{
+	if(r==-1)
+		roots[p]=p;
+	else
+		roots[p]=r;
+	return roots[p];
+}
+
+Mat
+labelingColor(Mat ims)
+{
+
+	Mat img_color = ims.clone();
+	cvtColor(img_color, img_color, CV_GRAY2BGR);
+
+	int* roots = new int[ims.total()];
+	int rows = ims.rows;
+	int cols = ims.cols;
+	int p = 0;
+	int r = -1;
+	uchar* ps = ims.data;
+
+	for(int i=0; i<rows; i++){
+		for(int j=0; j<cols; j++){
+			r = -1;
+
+			if( j>0 && (*(ps-1)==(*ps)) )
+				r = _union( _find(p-1, roots), r, roots);
+
+			if( (i>0 && j>0) && (*(ps-1-cols)==(*ps)) )
+				r = _union( _find(p-1-cols, roots), r, roots);
+
+			if( i>0 && (*(ps-cols) == (*ps)) )
+				r = _union(_find(p-cols, roots), r, roots);
+
+			if( (j<(cols-1) && i>0) && (*(ps+1-cols)==(*ps)) )
+				r = _union(_find(p+1-cols, roots), r, roots);
+
+			r = _add(p, r, roots);
+
+			p++;
+			ps++;
+		}
+	}
+
+	for(p=0; p<rows*cols; p++){
+		roots[p] = _find(p, roots);
+	}
+
+	int l=0;
+	for(int i=0; i<rows; i++){
+		for(int j=0; j<cols; j++){
+			int p = i*cols+j;
+			if(roots[p]==p)
+				roots[p] = l++;
+			else
+				roots[p] = roots[roots[p]];
+		}
+	}
+
+	int* roots_size = new int[l];
+	for(int i=0; i<l; i++){
+		roots_size[i]=0;
+	}
+
+	for(int i=0; i<rows; i++){
+		for(int j=0; j<cols; j++){
+			int p = i*cols+j;
+			roots_size[roots[p]]++;
+		}
+	}
+	int max_l = 0;
+	for(int i=1; i<l; i++){
+		if (roots_size[max_l] < roots_size[i])
+			max_l = i;
+		cout<<roots_size[i]<<endl;
+
+	}
+
+	for(int i=0; i<rows; i++){
+		for(int j=0; j<cols; j++){
+			if (roots[i*cols+j] > 0){
+				if (roots[i*cols+j] == max_l){
+					img_color.at<Vec3b>(i, j) = Vec3b(0, 255, 0);
+				} else {
+					if (roots_size[roots[i*cols+j]] < 10){
+
+					} else {
+						img_color.at<Vec3b>(i, j) = Vec3b(0, 0, 0);
+					}
+				}
+			}
+		}
+	}
+
+	//imshow("colorname", img_color);
+	cout<<"labeling: "<< l << " components detected"<<endl;
+	delete [] roots;
+	delete [] roots_size;
+
+	return img_color;
+}
+
+
+
 void process(const char* ims)
 {
 	Mat img_in = imread(ims, CV_LOAD_IMAGE_COLOR);
@@ -17,6 +149,7 @@ void process(const char* ims)
 	imshow(ims, img_in);
 	waitKey();
 
+	unsigned int size = img_in.rows * img_in.cols;
 	vector<vector<Point> > contours;
 	vector<Vec4i> hierarchy;
 	// Convertir l'image dans l'espace HSV
@@ -24,6 +157,11 @@ void process(const char* ims)
 	cvtColor(img_in, img_hsv, CV_BGR2HSV);
 
 
+	/*
+	H: 0-180
+	S: 0-255
+	V: 0-255
+	*/
 	// Modifie les canaux HSV par les paramètres
 	for (int i=0; i < img_hsv.rows ; i++) {
 		for (int j=0; j < img_hsv.cols; j++) {
@@ -34,63 +172,27 @@ void process(const char* ims)
 
 	// Sauvegarde la nouvelle image imd
 	cvtColor(img_hsv, img_hsv, CV_HSV2BGR);
-
 	imshow(ims, img_hsv);
 	waitKey();
 
+	// Recuperer le vert dans l'image
 	inRange(img_hsv, Scalar(0, 210, 0), Scalar(255, 255, 255), img_hsv); //Threshold the image
 	imshow(ims, img_hsv);
-
 	waitKey();
 
-	Scalar m = mean(img_hsv);
-	cerr<<"mean= "<<m<<endl;
 
-	if (m[0] <= 245){
-		erode(img_hsv, img_hsv, getStructuringElement(MORPH_ELLIPSE, Size(10, 10)) );
-		dilate( img_hsv, img_hsv, getStructuringElement(MORPH_ELLIPSE, Size(10, 10)) );
+	Mat field = labelingColor(img_hsv);
 
-		imshow(ims,img_hsv );
-		waitKey();
+	erode(field, field, getStructuringElement(MORPH_ELLIPSE, Size(20, 10)) );
+	dilate( field, field, getStructuringElement(MORPH_ELLIPSE, Size(10, 10)) );
 
-		Mat canny_output;
-		int thresh = 100;
-		/// Detect edges using canny
-		Canny(  img_hsv, canny_output, thresh, thresh*2, 3 );
-		imshow(ims,canny_output);
-		waitKey();
+	dilate( field, field, getStructuringElement(MORPH_ELLIPSE, Size(10, 10)) );
+	erode(field, field, getStructuringElement(MORPH_ELLIPSE, Size(10, 10)) );
 
-		/// Find contours
-		findContours(canny_output, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, Point(0, 0));
-		/// Draw contours
-		unsigned int max=0;
-		int max_index=0;
+cout<<size<<endl;
+	imshow(ims, field );
+	waitKey();
 
-		/// match close edges
-		for(unsigned int i = 0; i< contours.size(); i++ ){
-			drawContours(canny_output, contours, i, 255, 2, 8, hierarchy, 0, Point() );
-		}
-
-		imshow(ims,canny_output);
-		waitKey();
-
-		findContours( canny_output, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, Point(0, 0) );
-		for(unsigned int i = 0; i < contours.size(); i++ ){
-			if(contours[i].size() > max){
-				max = contours[i].size();
-				max_index = i;
-			}
-		}
-		drawContours(img_in, contours, max_index, 255, 2, 8, hierarchy, 0, Point());
-
-		imshow(ims,img_in);
-		waitKey();
-	} else {
-		cerr<< "tout est terrain"<<endl;
-		copyMakeBorder(img_in, img_in, 2, 2, 2, 2, BORDER_CONSTANT, 255);
-		imshow(ims, img_in);
-		waitKey();
-	}
 }
 
 void usage (const char *s)
