@@ -148,7 +148,7 @@ void process(const char* ims)
 
 	imshow(ims, img_in);
 	waitKey();
-
+	Mat mask(img_in.rows, img_in.cols, CV_8UC3, Scalar(0, 0, 0));
 	//	unsigned int size = img_in.rows * img_in.cols;
 	vector<vector<Point> > contours;
 	vector<Vec4i> hierarchy;
@@ -195,22 +195,44 @@ void process(const char* ims)
 
 	
 	Mat canny_output;
-	int thresh = 100;
+	//	int thresh = 100;
 	
 	/// Detect edges using canny
-	Canny(  field, canny_output, thresh, thresh*2, 3 );
+	//	Canny(  field, canny_output, thresh, thresh*2, 3 );
 	//	imshow(ims,canny_output);
 	//waitKey();
 	
-	
-	
+	Mat field_gray;
+	cvtColor(field,field_gray, CV_BGR2GRAY);
 	/// Find contours
-	findContours( canny_output, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, Point(0, 0) );  
+		findContours( field_gray, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, Point(0, 0) ); 
+	//
+  /// Find the convex hull object for each contour
+   vector<vector<Point> >hull( contours.size() );
+   //Find the field  
+ unsigned int max=0,  max_index=0;
+   for( unsigned int i = 0; i < contours.size(); i++ )
+     {	
+       
+       if (contours[i].size()>max)
+	 {
+	   max =contours[i].size();
+	   max_index=i;
+	 }
+     }
+   //	convexHull( Mat(contours[max_index]), hull, false );
+    for( unsigned int i = 0; i < contours.size(); i++ )
+      {  convexHull( Mat(contours[i]), hull[i], false ); }
+    drawContours( mask, hull, max_index,255,2 , 8, vector<Vec4i>(), 0, Point() );
+ cvtColor(mask,mask, CV_BGR2GRAY);
+  mask= labelingColor(mask);
+  drawContours( mask, hull, max_index, Scalar(0,255,0),2 , 8, vector<Vec4i>(), 0, Point() );
+
 	/// Draw contours
-	unsigned int max=0;
-	//	unsigned int max_2=0;
+	/*	unsigned int max=0;
+	//	unsigned int max2=0;
 	int max_index=0;
-	//	int max_index_2=0;
+	int max_index2=0;
 	
 	
 	  
@@ -226,33 +248,57 @@ void process(const char* ims)
 	findContours( canny_output, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, Point(0, 0) );  
 	
 	//detect border contours
-	unsigned int border_x=0,border_y=0;
+	unsigned int border_x=0,border_y1=0,border_y2=0;
+	unsigned int FirstBorder=0, SecondBorder=0;
        	for(unsigned int i = 0; i< contours.size(); i++ )
 	  {
 	    for (unsigned int j = 0; j< contours[i].size(); j++ )
-	      {//	cerr<<"contour"<<i<<","<<j<<" : x="<<contours[i][j].x<<",y="<<contours[i][j].y<<endl;
-		if(contours[i][j].x==1) border_x++;
-		if((contours[i][j].y==1)||(contours[i][j].y== canny_output.cols))border_y++; 
+	      { //cerr<<"contour"<<i<<","<<j<<" : x="<<contours[i][j].x<<",y="<<contours[i][j].y<<endl;
+		if(contours[i][j].x==1) border_x = 1;
+		if(contours[i][j].y==1) border_y1=1;
+		if(contours[i][j].y== canny_output.cols) border_y2=1; 
 	      }
-	    if( (contours[i].size()>max)&& (border_x>0)&&(border_y>0))
-	      {
-		max =contours[i].size();
-		max_index=i;
-		
-		
+	    if( (contours[i].size()>max)&&(border_x)&&((border_y1)||(border_y2)))
+	      { 
+		if((border_y1)&&(!FirstBorder)){
+		  FirstBorder=1;
+		  max =contours[i].size();
+		  max_index=i;
+		}
+		else
+		  if((border_y1)&&(FirstBorder)){ 
+		    SecondBorder=1;
+		    max =contours[i].size();
+		    max_index2=i;
+		  }
+		border_x=0; border_y1=0; border_y2=0;
 	      }
-	    border_x=0,border_y=0;
-	  }
-	
-	if((max_index!=0)&&(field.at<Vec3b>(0,0) == Vec3b(0,0,0))){
+	    
+	    if((max_index!=0)||(max_index2!=0)){
+	  if((FirstBorder)&&(field.at<Vec3b>(0,0) == Vec3b(0,0,0))){
 	  drawContours( img_in, contours, max_index,255 , 2, 8, hierarchy, 0, Point() );
+	  drawContours( mask, contours, max_index,255 , 2, 8, hierarchy, 0, Point() );
+	  }
+
+	  if((SecondBorder)&&(field.at<Vec3b>(0,canny_output.cols) == Vec3b(0,0,0))){
+	    drawContours( img_in, contours, max_index2,255 , 2, 8, hierarchy, 0, Point() );
+	    drawContours( mask, contours, max_index2,255 , 2, 8, hierarchy, 0, Point() );
+	  }
 	  
+	  cvtColor(mask,mask, CV_BGR2GRAY);
+	  mask= labelingColor(mask);
+	  
+	
 	  imshow(ims,canny_output);
 	  waitKey();
 	  imshow(ims,img_in);
+	  waitKey();*/
+	  imshow(ims,mask);
 	  waitKey();
-	}
+	  //	}
+	  //}
 }
+
 
 void usage (const char *s)
 {
