@@ -223,16 +223,18 @@ void process(const char* ims)
 	//	convexHull( Mat(contours[max_index]), hull, false );
 	for( unsigned int i = 0; i < contours.size(); i++ )
 	  {  convexHull( Mat(contours[i]), hull[i], false ); }
-	drawContours( mask, hull, max_index,255,2 , 8, vector<Vec4i>(), 0, Point() );
-	cvtColor(mask,mask, CV_BGR2GRAY);
-	mask= labelingColor(mask);
+	//	drawContours( mask, hull, max_index,255,2 , 8, vector<Vec4i>(), 0, Point() );
+	fillConvexPoly(mask, hull[max_index], Scalar(0,255,0));
+       
 	drawContours( img_in, hull, max_index, Scalar(0,255,0),2 , 8, vector<Vec4i>(), 0, Point() );
-	drawContours( mask, hull, max_index, Scalar(0,255,0),2 , 8, vector<Vec4i>(), 0, Point() );
-	
-		imshow(ims,img_in);
+       	drawContours( mask, hull, max_index, Scalar(0,255,0),1 , 8, vector<Vec4i>(), 0, Point() );
+
+	imshow(ims,img_in);
 	waitKey();
 	imshow(ims,mask);
-	waitKey();
+	waitKey();	
+
+
 	
 }
 
