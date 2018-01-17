@@ -149,7 +149,7 @@ void process(const char* ims)
 	imshow(ims, img_in);
 	waitKey();
 
-	unsigned int size = img_in.rows * img_in.cols;
+	//	unsigned int size = img_in.rows * img_in.cols;
 	vector<vector<Point> > contours;
 	vector<Vec4i> hierarchy;
 	// Convertir l'image dans l'espace HSV
@@ -208,9 +208,9 @@ void process(const char* ims)
 	findContours( canny_output, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, Point(0, 0) );  
 	/// Draw contours
 	unsigned int max=0;
-	unsigned int max_2=0;
+	//	unsigned int max_2=0;
 	int max_index=0;
-	int max_index_2=0;
+	//	int max_index_2=0;
 	
 	
 	  
@@ -230,7 +230,7 @@ void process(const char* ims)
        	for(unsigned int i = 0; i< contours.size(); i++ )
 	  {
 	    for (unsigned int j = 0; j< contours[i].size(); j++ )
-	      {	cerr<<"contour"<<i<<","<<j<<" : x="<<contours[i][j].x<<",y="<<contours[i][j].y<<endl;
+	      {//	cerr<<"contour"<<i<<","<<j<<" : x="<<contours[i][j].x<<",y="<<contours[i][j].y<<endl;
 		if(contours[i][j].x==1) border_x++;
 		if((contours[i][j].y==1)||(contours[i][j].y== canny_output.cols))border_y++; 
 	      }
