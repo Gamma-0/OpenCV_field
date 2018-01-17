@@ -178,7 +178,7 @@ void process(const char* ims)
 	waitKey();
 
 	// Recuperer le vert dans l'image
-	inRange(img_hsv, Scalar(0, 210, 0), Scalar(255, 255, 255), img_hsv); //Threshold the image
+	inRange(img_hsv, Scalar(0, 200, 0), Scalar(255, 255, 255), img_hsv); //Threshold the image
 	imshow(ims, img_hsv);
 	waitKey();
 
@@ -188,8 +188,11 @@ void process(const char* ims)
 	erode(field, field, getStructuringElement(MORPH_ELLIPSE, Size(20, 10)) );
 	dilate( field, field, getStructuringElement(MORPH_ELLIPSE, Size(10, 10)) );
 
-	//dilate( field, field, getStructuringElement(MORPH_ELLIPSE, Size(10, 10)) );
-	//erode(field, field, getStructuringElement(MORPH_ELLIPSE, Size(10, 10)) );
+	cvtColor(field, field, CV_BGR2GRAY);
+	field = labeling(field);
+
+	dilate( field, field, getStructuringElement(MORPH_ELLIPSE, Size(10, 10)) );
+	erode(field, field, getStructuringElement(MORPH_ELLIPSE, Size(10, 10)) );
 
 	//cout<<size<<endl;
 	imshow(ims, field );
