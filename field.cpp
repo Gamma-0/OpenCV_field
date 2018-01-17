@@ -189,24 +189,18 @@ void process(const char* ims)
 	dilate( field, field, getStructuringElement(MORPH_ELLIPSE, Size(10, 10)) );
 	erode(field, field, getStructuringElement(MORPH_ELLIPSE, Size(10, 10)) );
 
-	cout<<size<<endl;
+	//	cout<<size<<endl;
 	imshow(ims, field );
 	waitKey();
 
-	/*	erode(img_hsv, img_hsv, getStructuringElement(MORPH_ELLIPSE, Size(10, 10)) );
-	dilate( img_hsv, img_hsv, getStructuringElement(MORPH_ELLIPSE, Size(10, 10)) );
-	
-	imshow(ims,img_hsv );
-	waitKey();
-	*/
 	
 	Mat canny_output;
 	int thresh = 100;
 	
 	/// Detect edges using canny
 	Canny(  field, canny_output, thresh, thresh*2, 3 );
-	imshow(ims,canny_output);
-	waitKey();
+	//	imshow(ims,canny_output);
+	//waitKey();
 	
 	
 	
@@ -214,7 +208,9 @@ void process(const char* ims)
 	findContours( canny_output, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, Point(0, 0) );  
 	/// Draw contours
 	unsigned int max=0;
+	unsigned int max_2=0;
 	int max_index=0;
+	int max_index_2=0;
 	
 	
 	  
@@ -223,27 +219,45 @@ void process(const char* ims)
 	  drawContours(canny_output, contours, i    ,255 , 2, 8, hierarchy, 0, Point() );
 	}
 	
-	imshow(ims,canny_output);
-	waitKey();
+	//	imshow(ims,canny_output);
+	//	waitKey();
 	
+	//find contours
 	findContours( canny_output, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, Point(0, 0) );  
-	for(unsigned int i = 0; i< contours.size(); i++ ){
-	  if(contours[i].size()>max){
-	    max =contours[i].size();
-	    max_index=i;
-	  }
-	}
-       	drawContours( img_in, contours, max_index,255 , 2, 8, hierarchy, 0, Point() );
 	
-	imshow(ims,img_in);
-	waitKey();
-
+	//detect border contours
+	unsigned int border_x=0,border_y=0;
+       	for(unsigned int i = 0; i< contours.size(); i++ )
+	  {
+	    for (unsigned int j = 0; j< contours[i].size(); j++ )
+	      {	cerr<<"contour"<<i<<","<<j<<" : x="<<contours[i][j].x<<",y="<<contours[i][j].y<<endl;
+		if(contours[i][j].x==1) border_x++;
+		if((contours[i][j].y==1)||(contours[i][j].y== canny_output.cols))border_y++; 
+	      }
+	    if( (contours[i].size()>max)&& (border_x>0)&&(border_y>0))
+	      {
+		max =contours[i].size();
+		max_index=i;
+		
+		
+	      }
+	    border_x=0,border_y=0;
+	  }
+	
+	if((max_index!=0)&&(field.at<Vec3b>(0,0) == Vec3b(0,0,0))){
+	  drawContours( img_in, contours, max_index,255 , 2, 8, hierarchy, 0, Point() );
+	  
+	  imshow(ims,canny_output);
+	  waitKey();
+	  imshow(ims,img_in);
+	  waitKey();
+	}
 }
 
 void usage (const char *s)
 {
-	cout<<"Usage: "<<s<<" ims"<<endl;
-	exit(EXIT_FAILURE);
+  cout<<"Usage: "<<s<<" ims"<<endl;
+  exit(EXIT_FAILURE);
 }
 
 #define param 1
