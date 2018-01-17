@@ -226,9 +226,11 @@ void process(const char* ims)
 	drawContours( mask, hull, max_index,255,2 , 8, vector<Vec4i>(), 0, Point() );
 	cvtColor(mask,mask, CV_BGR2GRAY);
 	mask= labelingColor(mask);
+	drawContours( img_in, hull, max_index, Scalar(0,255,0),2 , 8, vector<Vec4i>(), 0, Point() );
 	drawContours( mask, hull, max_index, Scalar(0,255,0),2 , 8, vector<Vec4i>(), 0, Point() );
 	
-	
+		imshow(ims,img_in);
+	waitKey();
 	imshow(ims,mask);
 	waitKey();
 	
