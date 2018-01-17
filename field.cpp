@@ -42,7 +42,7 @@ _add(int p, int r, int* roots)
 }
 
 Mat
-labelingColor(Mat ims)
+labeling(Mat ims)
 {
 
 	Mat img_color = ims.clone();
@@ -82,14 +82,18 @@ labelingColor(Mat ims)
 		roots[p] = _find(p, roots);
 	}
 
-	int l=0;
+	int l=1;
 	for(int i=0; i<rows; i++){
 		for(int j=0; j<cols; j++){
 			int p = i*cols+j;
-			if(roots[p]==p)
-				roots[p] = l++;
-			else
-				roots[p] = roots[roots[p]];
+			if (img_color.at<Vec3b>(i, j)==Vec3b(0, 0, 0))
+				roots[p] = 0;
+			else {
+				if(roots[p]==p)
+					roots[p] = l++;
+				else
+					roots[p] = roots[roots[p]];
+			}
 		}
 	}
 
@@ -104,12 +108,10 @@ labelingColor(Mat ims)
 			roots_size[roots[p]]++;
 		}
 	}
-	int max_l = 0;
+	int max_l = 1;
 	for(int i=1; i<l; i++){
 		if (roots_size[max_l] < roots_size[i])
 			max_l = i;
-		cout<<roots_size[i]<<endl;
-
 	}
 
 	for(int i=0; i<rows; i++){
@@ -181,61 +183,47 @@ void process(const char* ims)
 	waitKey();
 
 
-	Mat field = labelingColor(img_hsv);
+	Mat field = labeling(img_hsv);
 
 	erode(field, field, getStructuringElement(MORPH_ELLIPSE, Size(20, 10)) );
 	dilate( field, field, getStructuringElement(MORPH_ELLIPSE, Size(10, 10)) );
 
-	dilate( field, field, getStructuringElement(MORPH_ELLIPSE, Size(10, 10)) );
-	erode(field, field, getStructuringElement(MORPH_ELLIPSE, Size(10, 10)) );
+	//dilate( field, field, getStructuringElement(MORPH_ELLIPSE, Size(10, 10)) );
+	//erode(field, field, getStructuringElement(MORPH_ELLIPSE, Size(10, 10)) );
 
-	//	cout<<size<<endl;
+	//cout<<size<<endl;
 	imshow(ims, field );
 	waitKey();
-	
-	
-	Mat canny_output;
-	//	int thresh = 100;
-	
-	/// Detect edges using canny
-	//	Canny(  field, canny_output, thresh, thresh*2, 3 );
-	//	imshow(ims,canny_output);
-	//waitKey();
-	
+
 	Mat field_gray;
 	cvtColor(field,field_gray, CV_BGR2GRAY);
 	/// Find contours
-	findContours( field_gray, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, Point(0, 0) ); 
+	findContours( field_gray, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, Point(0, 0) );
 	//
 	/// Find the convex hull object for each contour
 	vector<vector<Point> >hull( contours.size() );
-	//Find the field  
+	//Find the field
 	unsigned int max=0,  max_index=0;
-	for( unsigned int i = 0; i < contours.size(); i++ )
-	  {	
-     
-	    if (contours[i].size()>max)
-	      {
-		max =contours[i].size();
-		max_index=i;
-	      }
-	  }
+	for( unsigned int i = 0; i < contours.size(); i++ ) {
+		if (contours[i].size()>max) {
+			max =contours[i].size();
+			max_index=i;
+		}
+	}
 	//	convexHull( Mat(contours[max_index]), hull, false );
-	for( unsigned int i = 0; i < contours.size(); i++ )
-	  {  convexHull( Mat(contours[i]), hull[i], false ); }
+	for( unsigned int i = 0; i < contours.size(); i++ ) {
+		convexHull( Mat(contours[i]), hull[i], false );
+	}
 	//	drawContours( mask, hull, max_index,255,2 , 8, vector<Vec4i>(), 0, Point() );
 	fillConvexPoly(mask, hull[max_index], Scalar(0,255,0));
-       
-	drawContours( img_in, hull, max_index, Scalar(0,255,0),2 , 8, vector<Vec4i>(), 0, Point() );
-       	drawContours( mask, hull, max_index, Scalar(0,255,0),1 , 8, vector<Vec4i>(), 0, Point() );
+
+	drawContours( img_in, hull, max_index, Scalar(0,255,0), 2, 8, vector<Vec4i>(), 0, Point() );
+	drawContours( mask, hull, max_index, Scalar(0,255,0), 2, 8, vector<Vec4i>(), 0, Point() );
 
 	imshow(ims,img_in);
 	waitKey();
 	imshow(ims,mask);
-	waitKey();	
-
-
-	
+	waitKey();
 }
 
 
