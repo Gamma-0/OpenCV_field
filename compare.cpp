@@ -28,6 +28,9 @@ void process(const char* ims, const char* ims2)
 				error++;
 		}
 	}
+
+	imshow(img_diff, img_diff);
+	waitKey();
 	cout<<"Error percentage: "<<((float)error/(float)size)*100.0<<"%"<<endl;
 }
 
