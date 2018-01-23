@@ -21,29 +21,27 @@ void process(const char* ims, const char* ims2)
 
 	unsigned size = img_in.rows * img_in.cols;
 		unsigned error = 0;
-		Mat img_diff = img_in & ~img_in2; // faux positifs
-		for (int i = 0; i < img_in.rows; ++i){
-			for (int j = 0; j < img_in.rows; ++j){
+		unsigned error2 = 0;
+
+		Mat img_diff = img_in & ~img_in2; // faux negatifs
+		Mat img_diff2 = ~(img_in | ~img_in2); // faux positifs
+
+		for (int i = 0; i < img_diff.rows; ++i){
+			for (int j = 0; j < img_diff.cols; ++j){
 				if (img_diff.at<uchar>(i,j))
 					error++;
-			}
-		}
-
-		unsigned error2 = 0;
-		Mat img_diff2 = img_in | ~img_in2; // faux négatifs
-		for (int i = 0; i < img_in.rows; ++i){
-			for (int j = 0; j < img_in.rows; ++j){
 				if (img_diff2.at<uchar>(i,j))
 					error2++;
 			}
 		}
 
-		imshow("false positive", img_diff);
-		imshow("false negative", img_diff2);
+
+		imshow("false negative", img_diff);
+		imshow("false positive", img_diff2);
 		waitKey();
 
-		cout<<"Error percentage false positive : "<<((float)error/(float)size)*100.0<<"%"<<endl;
-		cout<<"Error percentage false negative : "<<((float)error2/(float)size)*100.0<<"%"<<endl;
+		cout<<"Error percentage false negative : "<<((float)error/(float)size)*100.0<<"%"<<endl;
+		cout<<"Error percentage false positive : "<<((float)error2/(float)size)*100.0<<"%"<<endl;
 
 }
 
