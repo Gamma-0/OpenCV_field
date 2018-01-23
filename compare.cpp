@@ -8,46 +8,49 @@ using namespace std;
 
 void process(const char* ims, const char* ims2)
 {
-	Mat img_in = imread(ims, CV_LOAD_IMAGE_COLOR);
+	Mat img_in = imread(ims, 0);
 	if (!img_in.data) {
 		cout<<"Could not open or find the image"<<endl;
 		exit(EXIT_FAILURE);
 	}
-	Mat img_in2 = imread(ims2, CV_LOAD_IMAGE_COLOR);
+	Mat img_in2 = imread(ims2, 0);
 	if (!img_in2.data) {
 		cout<<"Could not open or find the image"<<endl;
 		exit(EXIT_FAILURE);
 	}
 
-	unsigned size = img_in.rows * img_in.cols;
-		unsigned error = 0;
-		unsigned error2 = 0;
+	//unsigned size = img_in.rows * img_in.cols;
+	unsigned nb_false_negative = 0;	// Nombre de pixels faux positif
+	unsigned nb_false_positive = 0;	// Nombre de pixels faux negatif
+	unsigned nb_white = 0, nb_black = 0; // Nombre de pixels censes etre positif ou negatif
 
-		Mat img_diff = img_in & ~img_in2; // faux negatifs
-		Mat img_diff2 = ~(img_in | ~img_in2); // faux positifs
+	Mat img_false_negative = img_in & ~img_in2; // Image des faux negatifs
+	Mat img_false_positive = ~(img_in | ~img_in2); // Image des faux positifs
 
-		for (int i = 0; i < img_diff.rows; ++i){
-			for (int j = 0; j < img_diff.cols; ++j){
-				if (img_diff.at<uchar>(i,j))
-					error++;
-				if (img_diff2.at<uchar>(i,j))
-					error2++;
-			}
+	for (int i = 0; i < img_false_negative.rows; ++i){
+		for (int j = 0; j < img_false_negative.cols; ++j){
+			if (img_in.at<uchar>(i,j))
+				nb_white++;
+			else
+				nb_black++;
+			if (img_false_negative.at<uchar>(i,j))
+				nb_false_negative++;
+			if (img_false_positive.at<uchar>(i,j))
+				nb_false_positive++;
 		}
+	}
 
+	imshow("False negative", img_false_negative);
+	imshow("False positive", img_false_positive);
+	waitKey();
 
-		imshow("false negative", img_diff);
-		imshow("false positive", img_diff2);
-		waitKey();
-
-		cout<<"Error percentage false negative : "<<((float)error/(float)size)*100.0<<"%"<<endl;
-		cout<<"Error percentage false positive : "<<((float)error2/(float)size)*100.0<<"%"<<endl;
-
+	cout<<"Error percentage false negative: "<<((float)nb_false_negative/(float)nb_white)*100.0<<"%"<<endl;
+	cout<<"Error percentage false positive: "<<((float)nb_false_positive/(float)nb_black)*100.0<<"%"<<endl;
 }
 
 void usage (const char *s)
 {
-	cout<<"Usage: "<<s<<" ims"<<endl;
+	cout<<"Usage: "<<s<<" im_true im_computed"<<endl;
 	exit(EXIT_FAILURE);
 }
 
