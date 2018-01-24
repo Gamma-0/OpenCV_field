@@ -118,13 +118,9 @@ labeling(Mat ims)
 		for(int j=0; j<cols; j++){
 			if (roots[i*cols+j] > 0){
 				if (roots[i*cols+j] == max_l){
-					img_color.at<Vec3b>(i, j) = Vec3b(0, 255, 0);
+					img_color.at<Vec3b>(i, j) = Vec3b(255, 255, 255);
 				} else {
-					if (roots_size[roots[i*cols+j]] < 10){
-
-					} else {
-						img_color.at<Vec3b>(i, j) = Vec3b(0, 0, 0);
-					}
+					img_color.at<Vec3b>(i, j) = Vec3b(0, 0, 0);
 				}
 			}
 		}
@@ -185,7 +181,7 @@ void process(const char* ims, const char* ims_out)
 
 	Mat field = labeling(img_hsv);
 
-	erode(field, field, getStructuringElement(MORPH_ELLIPSE, Size(20, 10)) );
+	erode(field, field, getStructuringElement(MORPH_ELLIPSE, Size(10, 10)) );
 	dilate( field, field, getStructuringElement(MORPH_ELLIPSE, Size(10, 10)) );
 
 	cvtColor(field, field, CV_BGR2GRAY);
@@ -199,7 +195,7 @@ void process(const char* ims, const char* ims_out)
 	waitKey();
 
 	Mat field_gray;
-	cvtColor(field,field_gray, CV_BGR2GRAY);
+	cvtColor(field, field_gray, CV_BGR2GRAY);
 	/// Find contours
 	findContours( field_gray, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, Point(0, 0) );
 	//
@@ -222,6 +218,9 @@ void process(const char* ims, const char* ims_out)
 
 	drawContours( img_in, hull, max_index, Scalar(0,255,0), 2, 8, vector<Vec4i>(), 0, Point() );
 	drawContours( mask, hull, max_index, Scalar(255,255,255), 2, 8, vector<Vec4i>(), 0, Point() );
+
+
+	mask = mask + field;
 
 	imshow(ims,img_in);
 	waitKey();

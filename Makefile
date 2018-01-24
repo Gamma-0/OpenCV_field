@@ -10,7 +10,7 @@ else
  LDFLAGS = $(OCVLIB)
 endif
 
-TEST_FOLDER=Experiments_log/lot1/
+TEST_FOLDER=Experiments_log/lot2/
 RESULT_FOLDER=result/
 
 BIN = \
@@ -23,7 +23,7 @@ all: $(BIN)
 
 
 test:
-	n=1 ; while [[ $$n -le 10 ]] ; do \
+	n=1 ; while [[ $$n -le 30 ]] ; do \
 		./field $(TEST_FOLDER)$${n}.png $${n}_mask; true; \
 		./compare $(TEST_FOLDER)$${n}_mask.png $(RESULT_FOLDER)$${n}_mask.png; true; \
 		((n = n + 1)) ; \
