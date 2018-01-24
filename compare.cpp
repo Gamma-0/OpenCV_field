@@ -44,8 +44,16 @@ void process(const char* ims, const char* ims2)
 	imshow("False positive", img_false_positive);
 	waitKey();
 
-	cout<<"Error percentage false negative: "<<((float)nb_false_negative/(float)nb_white)*100.0<<"%"<<endl;
-	cout<<"Error percentage false positive: "<<((float)nb_false_positive/(float)nb_black)*100.0<<"%"<<endl;
+	cout<<"\n=> Test on file "<<ims2<<endl;
+	if (nb_white)
+		cout<<"Error percentage false negative: "<<((float)nb_false_negative/(float)nb_white)*100.0<<"%"<<endl;
+	else
+		cout<<"Error percentage false negative: None"<<endl;
+	if (nb_black)
+		cout<<"Error percentage false positive: "<<((float)nb_false_positive/(float)nb_black)*100.0<<"%"<<endl;
+	else
+		cout<<"Error percentage false positive: None"<<endl;
+
 }
 
 void usage (const char *s)

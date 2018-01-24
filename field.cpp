@@ -131,7 +131,7 @@ labeling(Mat ims)
 	}
 
 	//imshow("colorname", img_color);
-	cout<<"labeling: "<< l << " components detected"<<endl;
+	//cout<<"labeling: "<< l << " components detected"<<endl;
 	delete [] roots;
 	delete [] roots_size;
 
