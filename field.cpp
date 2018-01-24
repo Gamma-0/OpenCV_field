@@ -140,7 +140,7 @@ labeling(Mat ims)
 
 
 
-void process(const char* ims)
+void process(const char* ims, const char* ims_out)
 {
 	Mat img_in = imread(ims, CV_LOAD_IMAGE_COLOR);
 	if (!img_in.data) {
@@ -227,22 +227,22 @@ void process(const char* ims)
 	waitKey();
 	imshow(ims,mask);
 	waitKey();
-	imwrite(string("result/")+string(ims),mask);
+	imwrite(string("result/")+string(ims_out)+string(".png"),mask);
 }
 
 
 void usage (const char *s)
 {
-  cout<<"Usage: "<<s<<" ims"<<endl;
+  cout<<"Usage: "<<s<<" ims ims_out"<<endl;
   exit(EXIT_FAILURE);
 }
 
-#define param 1
+#define param 2
 
 int main (int argc, char* argv[])
 {
 	if (argc != (param+1))
 		usage(argv[0]);
-	process(argv[1]);
+	process(argv[1], argv[2]);
 	return EXIT_SUCCESS;
 }
