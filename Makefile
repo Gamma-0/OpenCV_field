@@ -10,7 +10,7 @@ else
  LDFLAGS = $(OCVLIB)
 endif
 
-TEST_FOLDER=Experiments_log/lot2/
+TEST_FOLDER=Experiments_log/lot1/
 RESULT_FOLDER=result/
 
 BIN = \

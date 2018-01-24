@@ -180,16 +180,34 @@ void process(const char* ims, const char* ims_out)
 
 
 	Mat field = labeling(img_hsv);
+	double mean = 0;
+	for(int i=0; i<field.rows; i++)
+		for(int j=0; j<field.cols; j++)
+			if (field.at<Vec3b>(i, j) == Vec3b(255, 255, 255))
+				mean+=1;
+	mean = mean / double((field.rows)*(field.cols));
+	double mean_tolerate = 0.90;
 
-	erode(field, field, getStructuringElement(MORPH_ELLIPSE, Size(10, 10)) );
-	dilate( field, field, getStructuringElement(MORPH_ELLIPSE, Size(10, 10)) );
+	if (mean < mean_tolerate){
+		erode(field, field, getStructuringElement(MORPH_ELLIPSE, Size(10, 10)) );
+		dilate( field, field, getStructuringElement(MORPH_ELLIPSE, Size(10, 10)) );
+	} else {
+		dilate( field, field, getStructuringElement(MORPH_ELLIPSE, Size(10, 10)) );
+		erode(field, field, getStructuringElement(MORPH_ELLIPSE, Size(10, 10)) );
+	}
 
 	cvtColor(field, field, CV_BGR2GRAY);
 	field = labeling(field);
+	imshow(ims, field );
+	waitKey();
 
-	dilate( field, field, getStructuringElement(MORPH_ELLIPSE, Size(10, 10)) );
-	erode(field, field, getStructuringElement(MORPH_ELLIPSE, Size(10, 10)) );
-
+	if (mean < mean_tolerate){
+		dilate( field, field, getStructuringElement(MORPH_ELLIPSE, Size(10, 10)) );
+		erode(field, field, getStructuringElement(MORPH_ELLIPSE, Size(10, 10)) );
+	} else {
+		erode(field, field, getStructuringElement(MORPH_ELLIPSE, Size(10, 10)) );
+		dilate( field, field, getStructuringElement(MORPH_ELLIPSE, Size(10, 10)) );
+	}
 	//cout<<size<<endl;
 	imshow(ims, field );
 	waitKey();
@@ -221,6 +239,8 @@ void process(const char* ims, const char* ims_out)
 
 
 	mask = mask + field;
+	dilate( mask, mask, getStructuringElement(MORPH_ELLIPSE, Size(20, 20)) );
+	erode(mask, mask, getStructuringElement(MORPH_ELLIPSE, Size(20, 20)) );
 
 	imshow(ims,img_in);
 	waitKey();
