@@ -237,10 +237,7 @@ void process(const char* ims, const char* ims_out)
 	drawContours( img_in, hull, max_index, Scalar(0,255,0), 2, 8, vector<Vec4i>(), 0, Point() );
 	drawContours( mask, hull, max_index, Scalar(255,255,255), 2, 8, vector<Vec4i>(), 0, Point() );
 
-
 	mask = mask + field;
-	dilate( mask, mask, getStructuringElement(MORPH_ELLIPSE, Size(20, 20)) );
-	erode(mask, mask, getStructuringElement(MORPH_ELLIPSE, Size(20, 20)) );
 
 	imshow(ims,img_in);
 	waitKey();
